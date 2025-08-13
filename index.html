@@ -1,101 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Big J’s Leg Day Timer & Tracker</title>
+  <title>Big J's 30-Min Leg Smackdown</title>
   <style>
     body { font-family: 'Segoe UI', sans-serif; background: #111; color: #eee; margin: 0; padding: 1rem; }
-    .container { max-width: 480px; margin: auto; background: #222; padding: 1rem; border-radius: 8px; }
+    .container { max-width: 500px; margin: auto; background: #222; padding: 1rem; border-radius: 10px; }
     h2, h3 { text-align: center; color: #00ff99; }
-    .timer { font-size: 2rem; text-align: center; margin: 1rem 0; color: #0f0; }
-    .btn-group { display: flex; justify-content: space-around; margin: 0.5rem 0; }
-    button { padding: 0.7rem; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; flex:1; margin:0 0.2rem; }
-    .start { background: #28a745; color: #fff; }
+    .timer { font-size: 2.2rem; text-align: center; margin: 1rem 0; color: #0f0; }
+    .btns { display: flex; justify-content: space-around; margin: 0.5rem 0; }
+    button { padding: 0.7rem; font-size: 1rem; border: none; border-radius: 5px; cursor: pointer; flex: 1; margin: 0 0.2rem; }
+    .start { background: #28a745; color: white; }
     .pause { background: #ffc107; color: #000; }
-    .reset { background: #dc3545; color: #fff; }
-    .section { margin-top: 1rem; }
-    label { display: block; margin-top: 0.8rem; font-weight: bold; }
-    input[type=number] { width: 100%; padding: 0.6rem; font-size: 1.1rem; border: none; border-radius:5px; background: #333; color: #fff; }
-    .step { background: #333; padding: 0.8rem; border-radius: 5px; margin: 0.6rem 0; }
+    .reset { background: #dc3545; color: white; }
+    .section { margin-top: 1.2rem; }
+    label { display: block; margin-top: 0.5rem; font-weight: bold; }
+    input[type=number] { width: 100%; padding: 0.6rem; font-size: 1rem; border-radius: 5px; background: #333; color: #fff; border: none; }
+    .phase { background: #333; padding: 0.8rem; border-radius: 6px; margin-top: 0.6rem; }
     .highlight { color: #0ff; font-weight: bold; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Big J’s 30‑Min Leg Flow</h2>
+    <h2>Big J’s 30‑Min Leg Smackdown</h2>
+
     <div class="timer" id="timer">00:00</div>
-    <div class="btn-group">
+    <div class="btns">
       <button class="start" onclick="startTimer()">Start</button>
       <button class="pause" onclick="pauseTimer()">Pause</button>
       <button class="reset" onclick="resetTimer()">Reset</button>
     </div>
 
     <div class="section">
-      <h3>Setup Your Game</h3>
-      <label>Front Squat TM / 1RM:</label>
-      <input type="number" id="tm" placeholder="Enter leg Training Max" oninput="prepareWarmup()" />
-      <label>Working Sets × Reps:</label>
-      <input type="number" id="sets" value="3" /> × <input type="number" id="reps" value="8" />
+      <h3>💪 Input Your Training Max</h3>
+      <label for="tm">Front Squat TM / 1RM:</label>
+      <input type="number" id="tm" placeholder="Enter TM" oninput="renderPhases()" />
     </div>
 
     <div class="section">
-      <h3>Watch the Clock → Do the Moves</h3>
-      <div id="stepsContainer"></div>
+      <h3>⏱️ Workout Flow</h3>
+      <div id="phases"></div>
     </div>
   </div>
 
-<script>
-  let timer, seconds = 0, running=false;
-  const steps = [
-    { time:0, label:"Warm-Up: Empty Bar", pct:0 },
-    { time:60, label:"Warm-Up: 50% TM", pct:0.5 },
-    { time:120, label:"Warm-Up: 70% TM", pct:0.7 },
-    { time:180, label:"Warm-Up: 80% TM", pct:0.8 },
-    { time:240, label:"Warm-Up: 90% TM", pct:0.9 },
-    { time:300, label:"Work Sets Start: Front Squats", pct:"work" },
-    { time:420, label:"Superset Begin: RDLs + Step-Ups", pct: null }
-  ];
+  <script>
+    let seconds = 0, timer, running = false;
 
-  function startTimer(){
-    if(running) return;
-    running=true;
-    timer=setInterval(()=>{
-      seconds++;
-      updateTime(); highlightStep();
-    },1000);
-  }
-  function pauseTimer(){ clearInterval(timer); running=false; }
-  function resetTimer(){ pauseTimer(); seconds=0; updateTime(); highlightStep(); }
+    const PHASES = [
+      { from: 0, to: 300, label: "🔥 Dynamic Warm-Up", notes: "Leg Swings, Hip Circles, Bodyweight Squats, Glute Bridges" },
+      { from: 300, to: 600, label: "🏋️ Front Squat Warm-Ups", notes: "50% → 90% TM Ramping" },
+      { from: 600, to: 1080, label: "💥 Working Sets - Front Squats", notes: "3–4 Sets @ 70% TM for 8–10 reps", pct: 0.7 },
+      { from: 1080, to: 1500, label: "🔁 Superset: RDL + Step-Ups", notes: "RDLs x10 + Step-Ups x12/leg × 3 rounds", pct: 0.5 },
+      { from: 1500, to: 1800, label: "🧘 Finisher + Cooldown", notes: "Wall Sit, Quad Stretch, Hip Flexor Flows" }
+    ];
 
-  function updateTime(){
-    const m = String(Math.floor(seconds/60)).padStart(2,'0');
-    const s = String(seconds%60).padStart(2,'0');
-    document.getElementById("timer").innerText = `${m}:${s}`;
-  }
+    function formatTime(t) {
+      const m = String(Math.floor(t / 60)).padStart(2, '0');
+      const s = String(t % 60).padStart(2, '0');
+      return `${m}:${s}`;
+    }
 
-  function prepareWarmup(){
-    const tm = parseFloat(document.getElementById("tm").value) || 0;
-    const sets = parseInt(document.getElementById("sets").value) || 3;
-    const reps = parseInt(document.getElementById("reps").value) || 8;
-    const container = document.getElementById("stepsContainer");
-    container.innerHTML = "";
-    steps.forEach(st => {
-      let weightInfo = "";
-      if(st.pct && typeof st.pct === 'number') weightInfo = ` → ${Math.round(tm * st.pct)} weight`;
-      else if(st.pct === "work") weightInfo = ` → ${sets}×${reps} @ ~${Math.round(tm*0.7)} each set`;
-      container.innerHTML += `<div class="step" id="step${st.time}">${formatTime(st.time)} - ${st.label}${weightInfo}</div>`;
-    });
-  }
+    function updateTimer() {
+      const tm = parseFloat(document.getElementById("tm").value) || 0;
+      document.getElementById("timer").innerText = formatTime(seconds);
+      PHASES.forEach((phase, i) => {
+        const el = document.getElementById("phase" + i);
+        if (seconds >= phase.from && seconds < phase.to) {
+          el.classList.add("highlight");
+        } else {
+          el.classList.remove("highlight");
+        }
+      });
+    }
 
-  function highlightStep(){
-    steps.forEach(st=>{
-      const el = document.getElementById(`step${st.time}`);
-      if(seconds >= st.time && seconds < st.time + 60) el.classList.add('highlight');
-      else el?.classList.remove('highlight');
-    });
-  }
-  function formatTime(t){ const m=String(Math.floor(t/60)).padStart(2,'0'), s=String(t%60).padStart(2,'0'); return `${m}:${s}`; }
-</script>
+    function renderPhases() {
+      const tm = parseFloat(document.getElementById("tm").value) || 0;
+      const container = document.getElementById("phases");
+      container.innerHTML = "";
+      PHASES.forEach((p, i) => {
+        let weight = "";
+        if (p.pct) {
+          weight = ` → Suggested: <strong>${Math.round(tm * p.pct)} kg/lbs</strong>`;
+        }
+        container.innerHTML += `
+          <div class="phase" id="phase${i}">
+            <strong>${formatTime(p.from)}–${formatTime(p.to)}</strong><br>
+            ${p.label}${weight}<br>
+            <small>${p.notes}</small>
+          </div>`;
+      });
+      updateTimer();
+    }
+
+    function startTimer() {
+      if (running) return;
+      running = true;
+      timer = setInterval(() => {
+        seconds++;
+        updateTimer();
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(timer);
+      running = false;
+    }
+
+    function resetTimer() {
+      pauseTimer();
+      seconds = 0;
+      updateTimer();
+    }
+
+    renderPhases(); // initial render
+  </script>
 </body>
 </html>
