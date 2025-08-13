@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Leg Growth Workout Tracker</title>
+  <title>Big J's Leg Day Tracker</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f4f4f4;
+      background: #151515;
+      color: #eee;
       margin: 0;
       padding: 1rem;
     }
@@ -15,14 +16,15 @@
     .container {
       max-width: 500px;
       margin: auto;
-      background: white;
+      background: #222;
       padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.4);
     }
 
-    h2 {
+    h2, h3 {
       text-align: center;
+      color: #00ff99;
     }
 
     label {
@@ -33,20 +35,27 @@
 
     input[type="number"] {
       width: 100%;
-      padding: 0.5rem;
-      font-size: 1.2rem;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      padding: 0.6rem;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 6px;
+      background: #333;
+      color: #fff;
+    }
+
+    ul {
+      padding-left: 1.2rem;
     }
 
     .stretch-list li {
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.4rem;
     }
 
     .timer {
       text-align: center;
       font-size: 2rem;
       margin: 1rem 0;
+      color: #0f0;
     }
 
     .button-group {
@@ -56,28 +65,34 @@
     }
 
     button {
-      padding: 0.8rem 1.2rem;
+      padding: 0.8rem;
       font-size: 1rem;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
     }
 
     .start-btn { background: #28a745; color: white; }
-    .pause-btn { background: #ffc107; }
+    .pause-btn { background: #ffc107; color: #000; }
     .reset-btn { background: #dc3545; color: white; }
 
     .summary {
-      margin-top: 1rem;
-      background: #e9f7ef;
+      background: #0f0f0f;
       padding: 1rem;
-      border-radius: 5px;
+      border-radius: 6px;
+      margin-top: 1rem;
+    }
+
+    .section {
+      margin-top: 1.5rem;
+      border-top: 1px solid #444;
+      padding-top: 1rem;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Leg Growth Workout 🦵</h2>
+    <h2>Big J’s 30-Min Leg Tracker 🦿</h2>
 
     <div class="timer" id="stopwatch">00:00</div>
     <div class="button-group">
@@ -86,43 +101,53 @@
       <button class="reset-btn" onclick="resetTimer()">Reset</button>
     </div>
 
-    <label>Dynamic Warm-Up Suggestions:</label>
-    <ul class="stretch-list">
-      <li>Leg Swings x 10 each</li>
-      <li>Walking Lunges x 10</li>
-      <li>Bodyweight Squats x 15</li>
-      <li>Glute Bridges x 15</li>
-      <li>Jumping Jacks x 20</li>
-    </ul>
+    <div class="section">
+      <h3>🔥 Dynamic Warm-Up</h3>
+      <ul class="stretch-list">
+        <li>Leg Swings x 10 each</li>
+        <li>Hip Circles x 10</li>
+        <li>Walking Lunges x 10</li>
+        <li>Bodyweight Squats x 15</li>
+        <li>Step March + Arm Swing x 30 sec</li>
+      </ul>
+    </div>
 
-    <label for="weight">Weight (lbs or kg):</label>
-    <input type="number" id="weight" placeholder="Enter working weight" />
+    <div class="section">
+      <h3>🏋️‍♂️ Front Box Squats</h3>
+      <label for="squatWeight">Weight:</label>
+      <input type="number" id="squatWeight" placeholder="kg or lbs" />
 
-    <label for="tm">Training Max (TM):</label>
-    <input type="number" id="tm" placeholder="Enter TM" oninput="calculatePercentage()" />
+      <label for="squatTM">Training Max (TM):</label>
+      <input type="number" id="squatTM" placeholder="TM value" oninput="updateSquatStats()" />
 
-    <label for="sets">Sets:</label>
-    <input type="number" id="sets" placeholder="Number of sets" />
+      <label for="squatSets">Sets:</label>
+      <input type="number" id="squatSets" />
 
-    <label for="reps">Reps per Set:</label>
-    <input type="number" id="reps" placeholder="Reps per set" />
+      <label for="squatReps">Reps:</label>
+      <input type="number" id="squatReps" />
 
-    <div class="summary" id="summary">
-      <strong>Total Volume:</strong> <span id="volume">0</span><br/>
-      <strong>% of TM:</strong> <span id="percentage">0%</span>
+      <div class="summary">
+        <p><strong>Total Volume:</strong> <span id="squatVolume">0</span></p>
+        <p><strong>% of TM:</strong> <span id="squatPercent">0%</span></p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>🔁 Superset (3 Rounds)</h3>
+      <p><strong>Romanian Deadlifts</strong> x 10</p>
+      <p><strong>Step-Ups</strong> OR <strong>Banded Leg Curls</strong> x 12 each leg</p>
+      <p>💡 Keep rest minimal — get that burn 🔥</p>
     </div>
   </div>
 
   <script>
-    let timer;
-    let elapsed = 0;
-    let running = false;
+    let timer, elapsed = 0, running = false;
 
     function updateTimerDisplay() {
-      const minutes = Math.floor(elapsed / 60);
-      const seconds = elapsed % 60;
+      const min = Math.floor(elapsed / 60);
+      const sec = elapsed % 60;
       document.getElementById("stopwatch").textContent =
-        String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0');
+        String(min).padStart(2, '0') + ":" + String(sec).padStart(2, '0');
     }
 
     function startTimer() {
@@ -145,27 +170,22 @@
       updateTimerDisplay();
     }
 
-    const inputs = ["weight", "sets", "reps", "tm"];
-    inputs.forEach(id => {
-      document.getElementById(id).addEventListener('input', updateSummary);
+    const squatInputs = ["squatWeight", "squatTM", "squatSets", "squatReps"];
+    squatInputs.forEach(id => {
+      document.getElementById(id).addEventListener('input', updateSquatStats);
     });
 
-    function calculatePercentage() {
-      const weight = parseFloat(document.getElementById("weight").value) || 0;
-      const tm = parseFloat(document.getElementById("tm").value) || 1;
-      const percent = ((weight / tm) * 100).toFixed(1);
-      document.getElementById("percentage").textContent = isNaN(percent) ? "0%" : percent + "%";
-    }
+    function updateSquatStats() {
+      const w = parseFloat(document.getElementById("squatWeight").value) || 0;
+      const s = parseInt(document.getElementById("squatSets").value) || 0;
+      const r = parseInt(document.getElementById("squatReps").value) || 0;
+      const tm = parseFloat(document.getElementById("squatTM").value) || 1;
 
-    function updateSummary() {
-      const weight = parseFloat(document.getElementById("weight").value) || 0;
-      const sets = parseInt(document.getElementById("sets").value) || 0;
-      const reps = parseInt(document.getElementById("reps").value) || 0;
+      const vol = w * s * r;
+      const pct = ((w / tm) * 100).toFixed(1);
 
-      const totalVolume = weight * sets * reps;
-      document.getElementById("volume").textContent = totalVolume;
-
-      calculatePercentage();
+      document.getElementById("squatVolume").textContent = vol;
+      document.getElementById("squatPercent").textContent = isNaN(pct) ? "0%" : `${pct}%`;
     }
   </script>
 </body>
