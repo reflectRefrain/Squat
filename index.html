@@ -1,119 +1,504 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Big J's 30-Min Leg Smackdown</title>
-  <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #111; color: #eee; margin: 0; padding: 1rem; }
-    .container { max-width: 500px; margin: auto; background: #222; padding: 1rem; border-radius: 10px; }
-    h2, h3 { text-align: center; color: #00ff99; }
-    .timer { font-size: 2.2rem; text-align: center; margin: 1rem 0; color: #0f0; }
-    .btns { display: flex; justify-content: space-around; margin: 0.5rem 0; }
-    button { padding: 0.7rem; font-size: 1rem; border: none; border-radius: 5px; cursor: pointer; flex: 1; margin: 0 0.2rem; }
-    .start { background: #28a745; color: white; }
-    .pause { background: #ffc107; color: #000; }
-    .reset { background: #dc3545; color: white; }
-    .section { margin-top: 1.2rem; }
-    label { display: block; margin-top: 0.5rem; font-weight: bold; }
-    input[type=number] { width: 100%; padding: 0.6rem; font-size: 1rem; border-radius: 5px; background: #333; color: #fff; border: none; }
-    .phase { background: #333; padding: 0.8rem; border-radius: 6px; margin-top: 0.6rem; }
-    .highlight { color: #0ff; font-weight: bold; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>30-Minute Leg Builder (Front Squat Focus)</title>
+<style>
+  :root{
+    --pad:14px;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
+    background:#0e0f12; color:#f5f7fb; line-height:1.45;
+    padding-bottom:96px; /* space for sticky footer */
+  }
+  header{
+    padding:20px var(--pad) 8px; border-bottom:1px solid #23252b;
+    background:linear-gradient(180deg,#12131a,#0e0f12);
+    position:sticky; top:0; z-index:10;
+  }
+  h1{font-size:20px; margin:0 0 6px 0}
+  .sub{color:#9aa3b2; font-size:13px}
+  .card{
+    background:#151821; border:1px solid #23252b; border-radius:var(--radius);
+    padding:16px; margin:14px;
+  }
+  .row{display:flex; gap:10px; flex-wrap:wrap}
+  .row > *{flex:1 1 140px}
+  label{display:block; font-size:12px; color:#aab1be; margin-bottom:6px}
+  input, select{
+    width:100%; padding:12px; border-radius:12px; border:1px solid #2a2e38;
+    background:#0f1118; color:#eef1f7; font-size:16px;
+  }
+  input[type="number"]{appearance:textfield}
+  input::placeholder{color:#596173}
+  .btn{
+    display:inline-block; width:100%; text-align:center; padding:14px 16px;
+    border-radius:14px; border:1px solid #2b2f39; background:#1a1f2b; color:#fff;
+    font-weight:600; font-size:16px;
+  }
+  .btn:active{transform:scale(0.995)}
+  .btn.primary{background:#2563eb; border-color:#2563eb}
+  .btn.ghost{background:transparent}
+  .btn-row{display:flex; gap:10px; margin-top:8px}
+  .section-title{font-weight:700; margin:4px 14px 8px; font-size:15px; color:#cbd5e1}
+  .plan{margin:8px 14px}
+  .step{
+    display:flex; align-items:center; gap:10px; padding:12px; border-radius:14px;
+    border:1px solid #252a35; margin-bottom:10px; background:#121520;
+  }
+  .step.active{border-color:#2563eb; background:#0f1422}
+  .step small{color:#92a0b2; font-size:12px}
+  .badge{
+    font-size:12px; padding:4px 8px; border-radius:999px; background:#1f2a3b; color:#cfe0ff;
+  }
+  .mono{font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  table{width:100%; border-collapse:separate; border-spacing:0 8px}
+  td,th{padding:10px 12px; text-align:left; font-size:14px}
+  tbody tr{background:#11151f; border:1px solid #242a36}
+  tbody tr td:first-child, thead tr th:first-child{border-radius:12px 0 0 12px}
+  tbody tr td:last-child, thead tr th:last-child{border-radius:0 12px 12px 0}
+  tfoot td{font-size:12px; color:#93a0b1}
+  .hint{color:#98a4b8; font-size:13px; margin-top:8px}
+  footer{
+    position:fixed; left:0; right:0; bottom:0; z-index:20;
+    background:#0b0d13; border-top:1px solid #1e2230; padding:10px var(--pad);
+    display:flex; align-items:center; gap:12px;
+  }
+  .now{flex:1}
+  .now strong{display:block; font-size:14px}
+  .now small{color:#9aa3b2}
+  .timer{
+    min-width:92px; text-align:center; font-weight:800; font-size:18px; letter-spacing:0.5px;
+    padding:10px 12px; border-radius:12px; background:#111827; border:1px solid #1f2937;
+  }
+  .controls{display:flex; gap:8px}
+  .controls .btn{width:auto; padding:10px 12px; font-size:14px}
+  .pill{
+    display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px;
+    background:#152033; border:1px solid #22314d; font-size:12px; color:#cfe0ff;
+  }
+  .small{font-size:12px; color:#9aa3b2}
+  .kicker{color:#a5b4cf; font-size:13px}
+</style>
 </head>
 <body>
-  <div class="container">
-    <h2>Big J’s 30‑Min Leg Smackdown</h2>
+<header>
+  <h1>Leg Day • 30-Minute Front Squat Builder</h1>
+  <div class="sub">Active knee-friendly warmup → 4×6 front squats @ 70–75% → accessories</div>
+</header>
 
-    <div class="timer" id="timer">00:00</div>
-    <div class="btns">
-      <button class="start" onclick="startTimer()">Start</button>
-      <button class="pause" onclick="pauseTimer()">Pause</button>
-      <button class="reset" onclick="resetTimer()">Reset</button>
+<!-- SETTINGS / INPUTS -->
+<div class="card" id="settings">
+  <div class="section-title">Inputs</div>
+  <div class="row">
+    <div>
+      <label for="units">Units</label>
+      <select id="units">
+        <option value="lb">Pounds (lb)</option>
+        <option value="kg">Kilograms (kg)</option>
+      </select>
     </div>
-
-    <div class="section">
-      <h3>💪 Input Your Training Max</h3>
-      <label for="tm">Front Squat TM / 1RM:</label>
-      <input type="number" id="tm" placeholder="Enter TM" oninput="renderPhases()" />
+    <div>
+      <label for="barWeight">Bar Weight</label>
+      <input id="barWeight" type="number" step="1" placeholder="45 (lb) / 20 (kg)" />
     </div>
-
-    <div class="section">
-      <h3>⏱️ Workout Flow</h3>
-      <div id="phases"></div>
+    <div>
+      <label for="oneRM">Front Squat 1RM / Training Max</label>
+      <input id="oneRM" type="number" step="1" placeholder="Enter your 1RM or TM" />
+    </div>
+  </div>
+  <div class="row">
+    <div>
+      <label for="fsLow">Front Squat % (Set 1–2)</label>
+      <input id="fsLow" type="number" step="1" value="70" />
+      <div class="small">Default 70%</div>
+    </div>
+    <div>
+      <label for="fsHigh">Front Squat % (Set 3–4)</label>
+      <input id="fsHigh" type="number" step="1" value="75" />
+      <div class="small">Default 75%</div>
+    </div>
+    <div>
+      <label for="roundTo">Round to nearest</label>
+      <input id="roundTo" type="number" step="0.5" value="5" />
+      <div class="small">Use 2.5 for kg plates</div>
     </div>
   </div>
 
-  <script>
-    let seconds = 0, timer, running = false;
+  <div class="row">
+    <div>
+      <label for="rdlPct">RDL % of Front Squat 1RM</label>
+      <input id="rdlPct" type="number" step="1" value="55" />
+      <div class="small">3×10 (edit if needed)</div>
+    </div>
+    <div>
+      <label for="stepPct">Step-Ups % of Front Squat 1RM (pair total)</label>
+      <input id="stepPct" type="number" step="1" value="30" />
+      <div class="small">2×10/leg (split into dumbbells)</div>
+    </div>
+    <div>
+      <label for="bridgePct">Glute Bridge % of Front Squat 1RM</label>
+      <input id="bridgePct" type="number" step="1" value="60" />
+      <div class="small">3×12</div>
+    </div>
+  </div>
 
-    const PHASES = [
-      { from: 0, to: 300, label: "🔥 Dynamic Warm-Up", notes: "Leg Swings, Hip Circles, Bodyweight Squats, Glute Bridges" },
-      { from: 300, to: 600, label: "🏋️ Front Squat Warm-Ups", notes: "50% → 90% TM Ramping" },
-      { from: 600, to: 1080, label: "💥 Working Sets - Front Squats", notes: "3–4 Sets @ 70% TM for 8–10 reps", pct: 0.7 },
-      { from: 1080, to: 1500, label: "🔁 Superset: RDL + Step-Ups", notes: "RDLs x10 + Step-Ups x12/leg × 3 rounds", pct: 0.5 },
-      { from: 1500, to: 1800, label: "🧘 Finisher + Cooldown", notes: "Wall Sit, Quad Stretch, Hip Flexor Flows" }
+  <div class="btn-row">
+    <button class="btn" id="save">Save Inputs</button>
+    <button class="btn ghost" id="clear">Clear</button>
+    <button class="btn primary" id="calc">Calculate Weights</button>
+  </div>
+  <div class="hint">Tip: enter your Training Max if you prefer (e.g., 90% of true 1RM). The plan will calculate and round all working weights.</div>
+</div>
+
+<!-- SQUAT TARGETS -->
+<div class="card" id="targets">
+  <div class="section-title">Front Squat Targets (4×6 • 3s down, fast up)</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Set</th><th>%</th><th>Target (Total)</th><th>Plates/Side</th><th>Notes</th>
+      </tr>
+    </thead>
+    <tbody id="fsTable">
+      <!-- filled by JS -->
+    </tbody>
+  </table>
+  <div class="hint kicker">Rest 2:00 between sets. Aim for clean, upright reps—no knee dive.</div>
+</div>
+
+<!-- ACCESSORY TARGETS -->
+<div class="card" id="accessories">
+  <div class="section-title">Accessory Suggestions (adjust % above as needed)</div>
+  <table>
+    <thead><tr><th>Exercise</th><th>Sets×Reps</th><th>Suggested Load</th><th>Notes</th></tr></thead>
+    <tbody id="accTable">
+      <!-- filled by JS -->
+    </tbody>
+  </table>
+  <div class="hint">These are starting points. If RPE > 8, reduce 5–10%. If it’s easy, add 2.5–5% next session.</div>
+</div>
+
+<!-- WORKOUT FLOW / TIMER -->
+<div class="section-title">Guided 30-Minute Flow</div>
+<div class="plan" id="plan">
+  <!-- Steps injected by JS -->
+</div>
+
+<footer>
+  <div class="now">
+    <strong id="nowStep">Ready • Press Start</strong>
+    <small id="nowSubtitle">Warmup begins at 00:00</small>
+  </div>
+  <div class="timer mono" id="clock">30:00</div>
+  <div class="controls">
+    <button class="btn primary" id="startBtn">Start</button>
+    <button class="btn" id="pauseBtn">Pause</button>
+    <button class="btn ghost" id="resetBtn">Reset</button>
+  </div>
+</footer>
+
+<script>
+  // --------- Utilities ----------
+  const $ = sel => document.querySelector(sel);
+  const fs = {
+    units: $('#units'),
+    bar: $('#barWeight'),
+    oneRM: $('#oneRM'),
+    fsLow: $('#fsLow'),
+    fsHigh: $('#fsHigh'),
+    roundTo: $('#roundTo'),
+    rdlPct: $('#rdlPct'),
+    stepPct: $('#stepPct'),
+    bridgePct: $('#bridgePct'),
+  };
+
+  function roundToNearest(value, step){
+    const s = Number(step || 5);
+    return Math.round(value / s) * s;
+  }
+  function plateMath(total, bar, step){
+    const perSide = (total - bar) / 2;
+    if (perSide <= 0) return "—";
+    // Show as nearest step (informational)
+    const p = roundToNearest(perSide, step);
+    return `${p}${unitsSymbol()}`;
+  }
+  function unitsSymbol(){
+    return fs.units.value === 'kg' ? 'kg' : 'lb';
+  }
+  function saveInputs(){
+    const data = {
+      units: fs.units.value,
+      bar: fs.bar.value,
+      oneRM: fs.oneRM.value,
+      fsLow: fs.fsLow.value,
+      fsHigh: fs.fsHigh.value,
+      roundTo: fs.roundTo.value,
+      rdlPct: fs.rdlPct.value,
+      stepPct: fs.stepPct.value,
+      bridgePct: fs.bridgePct.value
+    };
+    localStorage.setItem('leg30_inputs', JSON.stringify(data));
+  }
+  function loadInputs(){
+    const raw = localStorage.getItem('leg30_inputs');
+    if(!raw){
+      // sensible defaults
+      fs.units.value = 'lb';
+      fs.bar.value = 45;
+      return;
+    }
+    try{
+      const d = JSON.parse(raw);
+      fs.units.value = d.units ?? 'lb';
+      fs.bar.value = d.bar ?? 45;
+      fs.oneRM.value = d.oneRM ?? '';
+      fs.fsLow.value = d.fsLow ?? 70;
+      fs.fsHigh.value = d.fsHigh ?? 75;
+      fs.roundTo.value = d.roundTo ?? 5;
+      fs.rdlPct.value = d.rdlPct ?? 55;
+      fs.stepPct.value = d.stepPct ?? 30;
+      fs.bridgePct.value = d.bridgePct ?? 60;
+    }catch(e){}
+  }
+  $('#save').addEventListener('click', ()=>{ saveInputs(); toast('Inputs saved'); });
+  $('#clear').addEventListener('click', ()=>{
+    localStorage.removeItem('leg30_inputs');
+    Object.values(fs).forEach(el=>{
+      if(el.tagName === 'SELECT'){ el.selectedIndex = 0; }
+      else el.value = '';
+    });
+    fs.bar.value = (fs.units.value==='kg') ? 20 : 45;
+    fs.fsLow.value = 70; fs.fsHigh.value = 75; fs.roundTo.value = (fs.units.value==='kg')?2.5:5;
+    fs.rdlPct.value = 55; fs.stepPct.value = 30; fs.bridgePct.value = 60;
+    renderTables();
+  });
+  $('#calc').addEventListener('click', ()=>{ saveInputs(); renderTables(); });
+
+  // --------- Weight Calculations ----------
+  function calcFSWeights(){
+    const rm = Number(fs.oneRM.value || 0);
+    const bar = Number(fs.bar.value || 0);
+    const r = Number(fs.roundTo.value || 5);
+    const low = Number(fs.fsLow.value || 70)/100;
+    const high = Number(fs.fsHigh.value || 75)/100;
+    if (rm <= 0 || bar <= 0) return [];
+    const s1 = roundToNearest(rm*low, r);
+    const s2 = s1;
+    const s3 = roundToNearest(rm*high, r);
+    const s4 = s3;
+    return [
+      {set:1, pct:Math.round(low*100)+'%', total:s1, plates:plateMath(s1, bar, r)},
+      {set:2, pct:Math.round(low*100)+'%', total:s2, plates:plateMath(s2, bar, r)},
+      {set:3, pct:Math.round(high*100)+'%', total:s3, plates:plateMath(s3, bar, r)},
+      {set:4, pct:Math.round(high*100)+'%', total:s4, plates:plateMath(s4, bar, r)},
     ];
+  }
+  function calcAccessories(){
+    const rm = Number(fs.oneRM.value || 0);
+    const r = Number(fs.roundTo.value || 5);
+    const bar = Number(fs.bar.value || 0);
+    if (rm <= 0) return [];
+    const rdl = roundToNearest(rm * (Number(fs.rdlPct.value||55)/100), r);
+    const stepPair = roundToNearest(rm * (Number(fs.stepPct.value||30)/100), r);
+    const bridge = roundToNearest(rm * (Number(fs.bridgePct.value||60)/100), r);
+    const stepEach = unitsSymbol() === 'kg'
+      ? Math.round((stepPair/2)*10)/10
+      : roundToNearest(stepPair/2, r);
 
-    function formatTime(t) {
-      const m = String(Math.floor(t / 60)).padStart(2, '0');
-      const s = String(t % 60).padStart(2, '0');
-      return `${m}:${s}`;
-    }
-
-    function updateTimer() {
-      const tm = parseFloat(document.getElementById("tm").value) || 0;
-      document.getElementById("timer").innerText = formatTime(seconds);
-      PHASES.forEach((phase, i) => {
-        const el = document.getElementById("phase" + i);
-        if (seconds >= phase.from && seconds < phase.to) {
-          el.classList.add("highlight");
-        } else {
-          el.classList.remove("highlight");
-        }
+    return [
+      {name:'Romanian Deadlift (RDL)', scheme:'3×10', load:`${rdl}${unitsSymbol()}`, notes:'Barbell or dumbbells'},
+      {name:'Weighted Step-Ups', scheme:'2×10/leg', load:`${stepEach}${unitsSymbol()} each hand`, notes:'Box ~ knee height'},
+      {name:'Barbell Glute Bridge', scheme:'3×12', load:`${bridge}${unitsSymbol()}`, notes:`Plates/side guide: ${plateMath(bridge, bar, r)}`}
+    ];
+  }
+  function renderTables(){
+    const fsData = calcFSWeights();
+    const fsT = $('#fsTable'); fsT.innerHTML = '';
+    if (fsData.length === 0){
+      fsT.innerHTML = `<tr><td colspan="5" class="small">Enter your 1RM/TM and click <b>Calculate Weights</b>.</td></tr>`;
+    }else{
+      fsData.forEach(row=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>Set ${row.set}</td>
+          <td><span class="badge">${row.pct}</span></td>
+          <td class="mono">${row.total} ${unitsSymbol()}</td>
+          <td class="mono">${row.plates}</td>
+          <td>${row.set<=2?'Focus depth & bracing':'Drive elbows up, stay tall'}</td>
+        `;
+        fsT.appendChild(tr);
       });
     }
-
-    function renderPhases() {
-      const tm = parseFloat(document.getElementById("tm").value) || 0;
-      const container = document.getElementById("phases");
-      container.innerHTML = "";
-      PHASES.forEach((p, i) => {
-        let weight = "";
-        if (p.pct) {
-          weight = ` → Suggested: <strong>${Math.round(tm * p.pct)} kg/lbs</strong>`;
-        }
-        container.innerHTML += `
-          <div class="phase" id="phase${i}">
-            <strong>${formatTime(p.from)}–${formatTime(p.to)}</strong><br>
-            ${p.label}${weight}<br>
-            <small>${p.notes}</small>
-          </div>`;
+    const acc = calcAccessories();
+    const accT = $('#accTable'); accT.innerHTML = '';
+    if(acc.length){
+      acc.forEach(a=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${a.name}</td>
+          <td>${a.scheme}</td>
+          <td class="mono">${a.load}</td>
+          <td>${a.notes}</td>
+        `;
+        accT.appendChild(tr);
       });
-      updateTimer();
+    } else {
+      accT.innerHTML = `<tr><td colspan="4" class="small">Enter your 1RM/TM to get suggested loads for accessories.</td></tr>`;
     }
+  }
 
-    function startTimer() {
-      if (running) return;
-      running = true;
-      timer = setInterval(() => {
-        seconds++;
-        updateTimer();
-      }, 1000);
+  // --------- Plan / Steps / Timer ----------
+  const steps = [
+    // Warmup (10:00 total)
+    {id:'w1', name:'Foam Roll Quads & Glutes', dur:60, note:'30s each side', tag:'Warmup'},
+    {id:'w2', name:'Leg Swings', dur:60, note:'20 F/B + 20 S/S each leg', tag:'Warmup'},
+    {id:'w3', name:'Glute Bridges', dur:60, note:'2×15 (bodyweight)', tag:'Warmup'},
+    {id:'w4', name:'Walking Lunges', dur:120, note:'2×12 each (short stride)', tag:'Warmup'},
+    {id:'w5', name:'Banded Lateral Walks', dur:120, note:'2×10 steps each direction', tag:'Warmup'},
+    {id:'w6', name:'Goblet Squat Hold', dur:180, note:'30s hold × 2, pry hips open', tag:'Warmup'},
+
+    // Front Squat block ~15:00
+    {id:'s1', name:'Front Squat – Set 1', dur:60, note:'6 reps @ Set 1 %', tag:'Front Squat'},
+    {id:'r1', name:'Rest', dur:120, note:'Breathe; elbows high next set', tag:'Rest'},
+    {id:'s2', name:'Front Squat – Set 2', dur:60, note:'6 reps @ Set 1 %', tag:'Front Squat'},
+    {id:'r2', name:'Rest', dur:120, note:'Brace hard; knees track out', tag:'Rest'},
+    {id:'s3', name:'Front Squat – Set 3', dur:60, note:'6 reps @ Set 3 %', tag:'Front Squat'},
+    {id:'r3', name:'Rest', dur:120, note:'Stay upright; heels down', tag:'Rest'},
+    {id:'s4', name:'Front Squat – Set 4', dur:60, note:'6 reps @ Set 3 %', tag:'Front Squat'},
+
+    // Accessories (5:00)
+    {id:'a1', name:'Accessories', dur:300, note:'Pick 2—RDL / Step-Ups / Bridges', tag:'Accessories'},
+  ];
+
+  function renderPlan(){
+    const container = $('#plan'); container.innerHTML = '';
+    const fsW = calcFSWeights();
+    steps.forEach(st=>{
+      const li = document.createElement('div');
+      li.className = 'step';
+      const pctHint = (id)=>{
+        if(id==='s1'||id==='s2') return fsW.length?`${fsW[0].total} ${unitsSymbol()}`:'70% 1RM';
+        if(id==='s3'||id==='s4') return fsW.length?`${fsW[2].total} ${unitsSymbol()}`:'75% 1RM';
+        return null;
+      }
+      const add = pctHint(st.id);
+      li.innerHTML = `
+        <div class="pill">${st.tag}</div>
+        <div style="flex:1">
+          <div style="font-weight:700">${st.name}${add?` • <span class="mono">${add}</span>`:''}</div>
+          <small>${st.note}</small>
+        </div>
+        <div class="mono">${fmt(st.dur)}</div>
+      `;
+      container.appendChild(li);
+    });
+  }
+
+  // clock
+  let idx = 0, remain = totalTime(), ticking = false, handle = null;
+
+  function totalTime(){ return steps.reduce((s,x)=>s+x.dur,0); }
+
+  function fmt(s){
+    const m = Math.floor(s/60), sec = s%60;
+    return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  }
+  function highlight(){
+    // reset all
+    document.querySelectorAll('.step').forEach((el,i)=>{
+      el.classList.toggle('active', i===idx);
+    });
+    const cur = steps[idx] || {name:'Done', dur:0, note:''};
+    $('#nowStep').textContent = cur.name;
+    $('#nowSubtitle').textContent = cur.note || '';
+  }
+  function stepDurUpTo(i){
+    let s=0; for(let k=0;k<=i;k++) s+=steps[k].dur; return s;
+  }
+  function updateClock(){
+    $('#clock').textContent = fmt(remain);
+  }
+  function tick(){
+    if(!ticking) return;
+    remain = Math.max(0, remain-1);
+    // advance step at boundaries
+    const elapsed = totalTime() - remain;
+    // find index where elapsed < cumulative
+    let acc = 0, newIdx = 0;
+    for(let i=0;i<steps.length;i++){
+      acc += steps[i].dur;
+      if(elapsed < acc){ newIdx = i; break; }
+      if(elapsed >= totalTime()){ newIdx = steps.length-1; }
     }
+    if(newIdx !== idx){ idx = newIdx; highlight(); }
+    updateClock();
 
-    function pauseTimer() {
-      clearInterval(timer);
-      running = false;
+    if(remain === 0){
+      ticking = false; clearInterval(handle);
+      $('#nowStep').textContent = 'Finished • Nice work';
+      $('#nowSubtitle').textContent = 'Cool down + hydration';
+      return;
     }
-
-    function resetTimer() {
-      pauseTimer();
-      seconds = 0;
-      updateTimer();
+  }
+  function start(){
+    if(ticking) return;
+    // if first start, initialize
+    if(remain===totalTime()){
+      idx = 0; highlight();
     }
+    ticking = true;
+    handle = setInterval(tick, 1000);
+  }
+  function pause(){ ticking=false; clearInterval(handle); }
+  function reset(){
+    pause();
+    remain = totalTime();
+    idx = 0;
+    updateClock(); highlight();
+  }
+  $('#startBtn').addEventListener('click', start);
+  $('#pauseBtn').addEventListener('click', pause);
+  $('#resetBtn').addEventListener('click', reset);
 
-    renderPhases(); // initial render
-  </script>
+  // toast (subtle)
+  function toast(msg){
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.style.position='fixed'; t.style.left='50%'; t.style.bottom='110px';
+    t.style.transform='translateX(-50%)';
+    t.style.padding='10px 14px'; t.style.background='#111827'; t.style.border='1px solid #1f2937';
+    t.style.borderRadius='999px'; t.style.fontSize='13px'; t.style.zIndex='9999';
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(),1500);
+  }
+
+  // init
+  loadInputs();
+  if(!fs.bar.value){ fs.bar.value = (fs.units.value==='kg')?20:45; }
+  if(!fs.roundTo.value){ fs.roundTo.value = (fs.units.value==='kg')?2.5:5; }
+  renderTables();
+  renderPlan();
+  updateClock(); highlight();
+
+  // Re-render plan table when weights change
+  ['units','barWeight','oneRM','fsLow','fsHigh','roundTo','rdlPct','stepPct','bridgePct'].forEach(id=>{
+    document.getElementById(id).addEventListener('change', ()=>{
+      renderTables(); renderPlan(); saveInputs();
+    });
+  });
+
+  // If units switch, auto-set typical defaults
+  fs.units.addEventListener('change', ()=>{
+    if(fs.units.value==='kg'){ if(!fs.bar.value) fs.bar.value=20; fs.roundTo.value=2.5; }
+    else{ if(!fs.bar.value) fs.bar.value=45; fs.roundTo.value=5; }
+    renderTables(); renderPlan(); saveInputs();
+  });
+</script>
 </body>
 </html>
